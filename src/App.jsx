@@ -11,11 +11,15 @@ export default function App() {
   let submitRef = useRef(null);
   let errorRef = useRef(null);
 
-  useEffect(()=>{
+  useEffect(()=>{  
     setUp();
   }, [])
 
   async function setUp() {
+    if (!self.ai || !self.ai.languageModel) {
+      return;
+    }
+  
     setSession(await ai.languageModel.create({
       temperature: Number(1),
       topK: Number(1),
@@ -62,22 +66,39 @@ export default function App() {
     submitRef.current.innerHTML="Submit";
   }
 
+  if(session==null) {
+    return (
+      <>
+        <Nav />
+        <PrimaryDiv className="p-3">
+          <div>
+            <h4 className="text-xl text-[#C5CC5A]">OOPS!</h4>
+            Your browser doesn't support the Prompt API. If you're on Chrome, join the <a href="https://developer.chrome.com/docs/ai/built-in#get_an_early_preview" className="underline hover:text-[#888]">Early Preview Program</a> to enable it.
+            <br /><br />
+          </div>
+        </PrimaryDiv>
+        <Footer/>
+      </>
+    )
+  }
+
   return (
     <>
     <Nav />
     <main className="md:flex w-full">
         <PrimaryDiv title="Analyze code">
-          <div className="max-h-[90vh] h-[100vh] max-w-[32vw]">
+          <div className="max-h-[50lvh] md:max-h-[90vh] h-[100vh] md:max-w-[32vw]">
             <small
             disabled={true}
             className="text-sm bg-[#c46d52b6] p-2 rounded m-2 hidden"
             ref={errorRef}
             ></small>
             <pre
-            className="bg-[#333333] rounded resize-none p-2 md:max-w-[30vw] md:w-lvw max-h-[70lvh] m-2 overflow-scroll text-sm"
+            className="bg-[#333333] rounded resize-none p-2.5 md:max-w-[30vw] max-h-[15lvh] md:max-h-[70lvh] h-full m-2 overflow-scroll text-sm"
             contentEditable
             spellCheck={false}
             ref={inputRef}
+            placeholder="Paste your code here!"
             onPaste={(e)=>{
               e.preventDefault();
               document.execCommand('inserttext', false, event.clipboardData.getData('text/plain'));
@@ -103,9 +124,9 @@ export default function App() {
           </div>
         </PrimaryDiv>
 
-        <section className="max-w-[30vw]">
+        <section className="md:max-w-[30vw]">
 
-          <div className="flex">
+          <div className="flex flex-col">
 
             <PrimaryDiv title="Time complexity">  
               <span className={"bg-[#333333] rounded p-2 inline-block mt-2" + ((data==null)?" animate-pulse":null)}>{(data!=null)?(data.complexity.time):null}</span>
@@ -124,13 +145,13 @@ export default function App() {
           </div>
 
           <PrimaryDiv title="Simplified code">
-            <pre className={"bg-[#333333] rounded overflow-scroll text-xs p-3 m-2" + ((data==null)?" animate-pulse":null)} dangerouslySetInnerHTML={{__html: (data!=null)?(data.simplifiedCode.replaceAll("'''", "")):null}}></pre>
+            <pre className="bg-[#333333] rounded overflow-scroll text-xs p-3 m-2" dangerouslySetInnerHTML={{__html: (data!=null)?(data.simplifiedCode.replaceAll("'''", "")):"Waiting for input!"}}></pre>
           </PrimaryDiv>
 
         </section>
 
         <PrimaryDiv title="Additional approaches">
-          <ul  className="max-w-[30vw] w-[100vw] mt-4">
+          <ul  className="md:max-w-[30vw] w-[100vw] mt-4">
             {(data!=null)?(
 
               (data.altApproaches.length!=0)?(data.altApproaches.map((el, i)=>{
