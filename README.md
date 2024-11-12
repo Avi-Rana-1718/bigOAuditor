@@ -9,9 +9,9 @@ This project leverages the power of Google Chrome's built-in AI APIs to analyze 
 
 ## Key Features
 * **Code Analysis:** Accurately parses and analyzes code snippets.
-* **Time and Space Complexity:** Calculates asymptotic upper bounds.
+* **Time and Space Complexity:** Calculates the worst case complexity of the code.
 * **Simplified Explanation:** Provides a clear and concise explanation.
-* **Advanced Analysis:** Offers a detailed breakdown and optimization tips.
+* **Alternative Approaches:** Offers alternative and better approaches to the solve the problem.
 
 ## How to Use
 1. **Input Code:** Enter your code snippet into the provided input field.

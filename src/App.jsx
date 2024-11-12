@@ -74,7 +74,7 @@ export default function App() {
             ref={errorRef}
             ></small>
             <pre
-            className="bg-[#333333] rounded resize-none p-2 md:max-w-[30vw] md:w-lvw m-2 overflow-scroll text-sm"
+            className="bg-[#333333] rounded resize-none p-2 md:max-w-[30vw] md:w-lvw max-h-[70lvh] m-2 overflow-scroll text-sm"
             contentEditable
             spellCheck={false}
             ref={inputRef}
