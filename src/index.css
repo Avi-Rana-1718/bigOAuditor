@@ -4,7 +4,7 @@
 
 @layer {
   body {
-    @apply bg-[#0D0D0D] text-[#FCFCFC] font-["Hack"] h-[100vh];
+    @apply bg-[#0D0D0D] text-[#FFFFFF] font-["Hack"] h-[100vh];
   }
   i {
     @apply ml-1;

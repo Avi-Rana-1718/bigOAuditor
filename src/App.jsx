@@ -94,7 +94,7 @@ export default function App() {
             ref={errorRef}
             ></small>
             <pre
-            className="bg-[#333333] rounded resize-none p-2.5 md:max-w-[30vw] max-h-[15lvh] md:max-h-[70lvh] h-full m-2 overflow-scroll text-sm"
+            className="bg-[#333333] rounded resize-none p-2.5 md:max-w-[30vw] max-h-[15lvh] md:max-h-[60lvh] h-full m-2 overflow-scroll text-sm"
             contentEditable
             spellCheck={false}
             ref={inputRef}
@@ -126,7 +126,7 @@ export default function App() {
 
         <section className="md:max-w-[30vw]">
 
-          <div className="flex flex-col">
+          <div className="flex flex-col md:flex-row">
 
             <PrimaryDiv title="Time complexity">  
               <span className={"bg-[#333333] rounded p-2 inline-block mt-2" + ((data==null)?" animate-pulse":null)}>{(data!=null)?(data.complexity.time):null}</span>
