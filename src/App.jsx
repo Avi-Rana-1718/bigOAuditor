@@ -6,8 +6,15 @@ import Nav from "./_components/Nav";
 export default function App() {
 
   let [data, setData] = useState(null)
+  let [raw, setRaw] = useState("Wating for input!            ")
   let [session, setSession] = useState(null)
   let inputRef = useRef(null);
+
+  let timeRef = useRef(null);
+  let spaceRef = useRef(null);
+  let approachRef = useRef(null);
+  let moreRef = useRef(null);
+
   let submitRef = useRef(null);
   let errorRef = useRef(null);
 
@@ -23,7 +30,7 @@ export default function App() {
     setSession(await ai.languageModel.create({
       temperature: Number(1),
       topK: Number(1),
-      systemPrompt: "You are an expert DSA bot that computes the time and space complexity in bigO notation of the approach and additional provides simplified code and more DSA approaches for the same input question in the same programming language only. The output should be json format having the following structure: {complexity:{space, time}, analyzedApproach, approachName, simplifiedCode, altApproaches:[{approachName, code}]}. Don't mention the format in the output and always return production ready JSON. Don't include backticks(`) anywhere and also exclude literal control characters! Output should be in a single line!"
+      systemPrompt: "You are an expert DSA bot. Try to answer everything in the least amount of words, provide no explanation. Always return English and do not include accents! The input will always be in english and always contain code."
     }));
     console.log("Created!");
   }
@@ -37,7 +44,6 @@ export default function App() {
   
 
   async function getResponse() {
-    //console.log(inputRef.current.innerText);
     submitRef.current.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i>Analyzing`;
     submitRef.current.disabled=true;
     console.log("Processing");    
@@ -45,11 +51,36 @@ export default function App() {
     try {
       errorRef.current.classList.remove("block");
       errorRef.current.classList.add("hidden");
-      let response = await session.prompt(" Don't include backticks(`) anywhere and also exclude literal control characters! Output should be in a SINGLE line! The output should be of the same language of the input. Give analyzed approach like brute force, dynamic programming, two pointer, greedy etc. Make sure the output is not badly parsed! The question is : " + inputRef.current.innerText);
-      console.log(response);
-      console.log(JSON.parse(response.substring(response.indexOf("{"), response.lastIndexOf("}")+1).replaceAll(" \n", " ").replaceAll('`', `'`).replaceAll("````", "'")));
+      console.log(inputRef.current.innerText.trim().replaceAll("\n", "").replaceAll("\t", ""));
       
-      setData(JSON.parse(response.substring(response.indexOf("{"), response.lastIndexOf("}")+1).replaceAll(" \n", " ").replaceAll('`', `'`).replaceAll("````", "'")));
+      let stream = await session.promptStreaming("Output the space, time complexity,  the analyzed approach used (like Brute force, Dynamic programming) and more approaches in the following format: 'time: , space: , analyzedApproach: , moreApproaches: '." + inputRef.current.innerText.replaceAll("\t", "").replaceAll("\n", ""));
+    
+      for await (const chunk of stream) {
+        let res = chunk.trim();
+        setRaw(res)
+        res=res.replaceAll('`', "")
+        let output = res.split(",");
+        
+        
+        if(res.includes("time: ")) {
+          timeRef.current.innerText=output[0].substring(output[0].indexOf("time: ") + "time: ".length).trim();
+        }
+        if(res.includes("space: ")) {
+          spaceRef.current.innerText = output[1].substring(output[1].indexOf("space: ") + "space: ".length).trim();
+        }
+        if(res.includes("analyzedApproach: ")) {
+          approachRef.current.innerText = output[2].substring(output[2].indexOf("analyzedApproach: ") + "analyzedApproach: ".length).trim();
+        }
+        if(res.includes("moreApproaches:")) {
+          let data = res.substring(res.indexOf("moreApproaches:") + "moreApproaches: ".length).trim();
+          console.log("OUTPUT:")
+          data=data.split(/approachName|link/g);       
+  
+          setData(data)
+        }
+        
+      }
+      
       const { maxTokens, temperature, tokensLeft, tokensSoFar, topK } = session;
 
       console.log(maxTokens, temperature, tokensLeft, tokensSoFar, topK);
@@ -66,7 +97,7 @@ export default function App() {
     submitRef.current.innerHTML="Submit";
   }
 
-  if(session==null) {
+  if(!self.ai || !self.ai.languageModel) {
     return (
       <>
         <Nav />
@@ -126,46 +157,41 @@ export default function App() {
 
         <section className="md:max-w-[30vw]">
 
-          <div className="flex flex-col md:flex-row">
+          <div className="flex flex-col md:flex-col">
 
             <PrimaryDiv title="Time complexity">  
-              <span className={"bg-[#333333] rounded p-2 inline-block mt-2" + ((data==null)?" animate-pulse":null)}>{(data!=null)?(data.complexity.time):null}</span>
+              <span ref={timeRef} className={"bg-[#333333] rounded p-2 inline-block mt-2"}></span>
               <a href="https://en.wikipedia.org/wiki/Time_complexity" className="block text-sm mt-2 text-[#C5CC5A] hover:underline">Learn more<i class="fa-solid fa-square-arrow-up-right"></i></a>
             </PrimaryDiv>
 
             <PrimaryDiv title="Space complexity">
-              <span className={"bg-[#333333] rounded p-2 inline-block mt-2" + ((data==null)?" animate-pulse":null)}>{(data!=null)?(data.complexity.space):null}</span>
+              <span ref={spaceRef} className={"bg-[#333333] rounded p-2 inline-block mt-2"}></span>
               <a href="https://en.wikipedia.org/wiki/Space_complexity" className="block text-sm mt-2 text-[#C5CC5A] hover:underline">Learn more<i class="fa-solid fa-square-arrow-up-right"></i></a>
             </PrimaryDiv>
 
             <PrimaryDiv title="Analyzed approach">
-              <span className={"bg-[#333333] rounded p-2 inline-block mt-2" + ((data==null)?" animate-pulse":null)}>{(data!=null)?(data.approachName):null}</span>
+              <span ref={approachRef} className={"bg-[#333333] rounded p-2 inline-block mt-2"}></span>
             </PrimaryDiv>
-
+            <PrimaryDiv title="Additional approaches">
+                <ul className="list-none bg-[#333333] rounded resize-none p-2.5 md:max-w-[30vw] max-h-[15lvh] md:max-h-[60lvh] h-full m-2 overflow-scroll text-wrap block"
+                >
+                  {(data!=null)?(
+                  data.map((el, i)=>{
+                    return <li key={el+i}>{el}</li>
+              })
+                ):null}
+                </ul>
+            </PrimaryDiv>
           </div>
-
-          <PrimaryDiv title="Simplified code">
-            <pre className="bg-[#333333] rounded overflow-scroll text-xs p-3 m-2" dangerouslySetInnerHTML={{__html: (data!=null)?(data.simplifiedCode.replaceAll("'''", "")):"Waiting for input!"}}></pre>
-          </PrimaryDiv>
 
         </section>
 
-        <PrimaryDiv title="Additional approaches">
-          <ul  className="md:max-w-[30vw] w-[100vw] mt-4">
-            {(data!=null)?(
-
-              (data.altApproaches.length!=0)?(data.altApproaches.map((el, i)=>{
-                return (
-                <li key={el.approachName}>
-                  <h4>{i+1}. {el.approachName}</h4>
-                  <pre className="text-xs overflow-scroll bg-[#333333] rounded p-3 m-2">
-                    {el.code.replaceAll("'''", "")}
-                  </pre>
-                </li>
-              )
-              })):("No alternative approach found!")
-            ):("No alternative approach found!")}
-          </ul>
+        <PrimaryDiv title="Raw response">
+          <pre 
+          className="bg-[#333333] rounded resize-none p-2.5 md:max-w-[30vw] max-h-[15lvh] md:max-h-[60lvh] h-full m-2 overflow-scroll text-wrap block"
+          >
+          {raw}
+          </pre>
         </PrimaryDiv>
 
     </main>
