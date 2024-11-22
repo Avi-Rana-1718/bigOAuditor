@@ -28,9 +28,9 @@ export default function App() {
     }
   
     setSession(await ai.languageModel.create({
-      temperature: Number(1),
-      topK: Number(1),
-      systemPrompt: "You are an expert DSA bot. Try to answer everything in the least amount of words, provide no explanation. Always return English and do not include accents! The input will always be in english and always contain code."
+      temperature: Number(0),
+      topK: Number(0),
+      systemPrompt: "You are an expert DSA bot. Try to answer everything in the least amount of words, provide no explanation."
     }));
     console.log("Created!");
   }
@@ -53,13 +53,13 @@ export default function App() {
       errorRef.current.classList.add("hidden");
       console.log(inputRef.current.innerText.trim().replaceAll("\n", "").replaceAll("\t", ""));
       
-      let stream = await session.promptStreaming("Output the space, time complexity,  the analyzed approach used (like Brute force, Dynamic programming) and more approaches in the following format: 'time: , space: , analyzedApproach: , moreApproaches: '." + inputRef.current.innerText.replaceAll("\t", "").replaceAll("\n", ""));
+      let stream = await session.promptStreaming("Output the space complexity, time complexity, the analyzed approach used (like Brute force, Dynamic programming) and names of approaches that can be used in the following format: time: | space: | analyzedApproach: | moreApproaches: ." + inputRef.current.innerText.replaceAll("\t", "").replaceAll("\n", ""));
     
       for await (const chunk of stream) {
         let res = chunk.trim();
         setRaw(res)
         res=res.replaceAll('`', "")
-        let output = res.split(",");
+        let output = res.split("|");
         
         
         if(res.includes("time: ")) {
@@ -73,7 +73,6 @@ export default function App() {
         }
         if(res.includes("moreApproaches:")) {
           let data = res.substring(res.indexOf("moreApproaches:") + "moreApproaches: ".length).trim();
-          console.log("OUTPUT:")
           data=data.split(/approachName|link/g);       
   
           setData(data)
@@ -157,8 +156,7 @@ export default function App() {
 
         <section className="md:max-w-[30vw]">
 
-          <div className="flex flex-col md:flex-col">
-
+          <div className="flex md:flex-row">
             <PrimaryDiv title="Time complexity">  
               <span ref={timeRef} className={"bg-[#333333] rounded p-2 inline-block mt-2"}></span>
               <a href="https://en.wikipedia.org/wiki/Time_complexity" className="block text-sm mt-2 text-[#C5CC5A] hover:underline">Learn more<i class="fa-solid fa-square-arrow-up-right"></i></a>
@@ -172,27 +170,31 @@ export default function App() {
             <PrimaryDiv title="Analyzed approach">
               <span ref={approachRef} className={"bg-[#333333] rounded p-2 inline-block mt-2"}></span>
             </PrimaryDiv>
-            <PrimaryDiv title="Additional approaches">
-                <ul className="list-none bg-[#333333] rounded resize-none p-2.5 md:max-w-[30vw] max-h-[15lvh] md:max-h-[60lvh] h-full m-2 overflow-scroll text-wrap block"
-                >
-                  {(data!=null)?(
-                  data.map((el, i)=>{
-                    return <li key={el+i}>{el}</li>
-              })
-                ):null}
-                </ul>
-            </PrimaryDiv>
           </div>
 
+            <PrimaryDiv title="Additional approaches">
+              <ul className="list-none bg-[#333333] rounded resize-none p-2.5 md:max-w-[30vw] max-h-[15lvh] md:max-h-[60lvh] h-full m-2 overflow-scroll text-wrap block"
+              >
+                {(data!=null)?(
+                data.map((el, i)=>{
+                  return <li key={el+i}>{el}</li>
+                })
+                ):null}
+              </ul>
+          </PrimaryDiv>
         </section>
 
+        <div>
         <PrimaryDiv title="Raw response">
+          <div className="max-h-[50lvh] md:max-h-[90vh] h-[100vh] md:max-w-[32vw] w-full">
           <pre 
           className="bg-[#333333] rounded resize-none p-2.5 md:max-w-[30vw] max-h-[15lvh] md:max-h-[60lvh] h-full m-2 overflow-scroll text-wrap block"
           >
           {raw}
           </pre>
+          </div>
         </PrimaryDiv>
+        </div>
 
     </main>
     <Footer />
