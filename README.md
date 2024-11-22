@@ -2,7 +2,7 @@
 
 **A powerful tool to analyze your code's efficiency.**
 
-[Website](#) | [Chrome Build-in AI Challenge](https://googlechromeai.devpost.com/)
+[Website](https://big-o-auditor.vercel.app/) | [Chrome Build-in AI Challenge](https://googlechromeai.devpost.com/) | [Submission link](https://devpost.com/software/big0auditor)
 
 ## Overview
 This project leverages the power of Google Chrome's built-in AI APIs to analyze code snippets and provide insights into their time and space complexity. It offers simplified and advanced explanations to help you optimize your code.
